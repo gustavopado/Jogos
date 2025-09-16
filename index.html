@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu de Jogos - Galáxia</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    color: white;
+    overflow: hidden;
+    position: relative;
+    background: #0b0f2a;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    z-index: 1;
+    text-shadow: 0 0 8px #00f6ff, 0 0 15px #00f6ff, 0 0 25px #0ff, 0 0 40px #0ff;
+    animation: neonGlow 2s ease-in-out infinite alternate;
+  }
+  @keyframes neonGlow {
+    0% { text-shadow: 0 0 8px #00f6ff,0 0 15px #00f6ff,0 0 25px #0ff,0 0 40px #0ff; }
+    100% { text-shadow: 0 0 12px #00f6ff,0 0 20px #00f6ff,0 0 30px #0ff,0 0 50px #0ff; }
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 40px;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeIn 2s forwards 0.5s;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .game-menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    width: 90%;
+    max-width: 1000px;
+    z-index: 1;
+  }
+
+  .game-card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+    transition: transform 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+    cursor: pointer;
+  }
+  .game-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 18px 35px rgba(0,0,0,0.45);
+  }
+
+  .game-card img {
+    width: 100%;
+    border-radius: 18px;
+    margin-bottom: 15px;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+  }
+  .game-card:hover img { transform: scale(1.07); }
+
+  .game-title {
+    font-size: 1.7rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-shadow: 1px 1px 6px rgba(0,0,0,0.3);
+  }
+
+  .game-desc {
+    font-size: 1.05rem;
+    opacity: 0.85;
+    line-height: 1.4;
+  }
+
+  @media(max-width:600px){
+    h1 { font-size: 2.2rem; margin-bottom: 20px; }
+    .subtitle { font-size: 1rem; margin-bottom: 25px; }
+    .game-card { padding: 20px 15px; }
+    .game-title { font-size: 1.4rem; }
+    .game-desc { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+  <h1>🎮 Escolha Seu Jogo</h1>
+  <div class="subtitle">Prepare-se para a ação! Escolha seu desafio e divirta-se.</div>
+
+  <div class="game-menu">
+    <div class="game-card" onclick="window.location.href='velha.html'">
+      <img src="https://i.imgur.com/WlZ9QlC.png" alt="Jogo da Velha">
+      <div class="game-title">Jogo da Velha</div>
+      <div class="game-desc">Desafie a CPU neste clássico! Pontuação e vidas inclusas.</div>
+    </div>
+
+    <div class="game-card" onclick="window.location.href='falling.html'">
+      <img src="https://i.imgur.com/1K6rRe0.png" alt="falling">
+      <div class="game-title">falling</div>
+      <div class="game-desc">Teste sua memória encontrando os pares antes do tempo acabar.</div>
+    </div>
+
+    <div class="game-card" onclick="window.location.href='jogodacobra.html'">
+      <img src="https://i.imgur.com/JS9lKXq.png" alt="Jogo da Cobrinha">
+      <div class="game-title">Jogo da Cobrinha</div>
+      <div class="game-desc">Controle a cobrinha e cresça sem bater nas paredes!</div>
+    </div>
+  </div>
+
+  <canvas id="galaxy"></canvas>
+
+  <script>
+    const canvas = document.getElementById('galaxy');
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = window.innerWidth;
+    let h = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      initStars();
+    });
+
+    const stars = [];
+    const STAR_COUNT = 200;
+
+    function initStars() {
+      stars.length = 0;
+      for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          radius: Math.random() * 1.2,
+          alpha: Math.random(),
+          dx: (Math.random() - 0.5) * 0.3,
+          dy: (Math.random() - 0.5) * 0.3,
+          flicker: Math.random() * 0.05
+        });
+      }
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, w, h);
+      for (const s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 200, 255, ${s.alpha})`;
+        ctx.fill();
+        s.alpha += (Math.random() - 0.5) * s.flicker;
+        if (s.alpha < 0) s.alpha = 0;
+        if (s.alpha > 1) s.alpha = 1;
+        s.x += s.dx;
+        s.y += s.dy;
+        if (s.x < 0) s.x = w;
+        if (s.x > w) s.x = 0;
+        if (s.y < 0) s.y = h;
+        if (s.y > h) s.y = 0;
+      }
+      requestAnimationFrame(drawStars);
+    }
+
+    initStars();
+    drawStars();
+  </script>
+</body>
+</html>

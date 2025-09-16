@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Jogo da Velha — Versão Elite</title>
+<style>
+:root{
+  --bg1:#0f1724;
+  --bg2:#1e293b;
+  --accent:#7dd3fc;
+  --accent-2:#60a5fa;
+  --card:rgba(255,255,255,0.04);
+  --glass:rgba(255,255,255,0.06);
+  --good:#34d399;
+  --bad:#fb7185;
+  --muted:rgba(255,255,255,0.7);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+body{display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(1200px 600px at 10% 10%,#07102b 0%,#0b1930 10%,#071225 30%,#071029 60%),linear-gradient(135deg,#071029,#10213a);color:#e6eef8;-webkit-font-smoothing:antialiased;}
+.app{width:960px;max-width:96vw;display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.02));border-radius:16px;padding:20px;box-shadow:0 12px 40px rgba(2,6,23,0.6);min-height:420px;}
+.title{font-size:20px;margin:0 0 8px 0;display:flex;align-items:center;gap:10px;}
+.subtitle{font-size:13px;color:var(--muted);margin:0 0 14px 0;}
+.btn{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:12px 18px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#021025;font-weight:700;border-radius:12px;border:none;cursor:pointer;box-shadow:0 8px 30px rgba(30,58,138,0.25),inset 0 -6px 12px rgba(255,255,255,0.06);transition:transform .14s ease;}
+.btn:hover{transform:translateY(-3px);}
+.hud{margin-top:18px;display:flex;flex-direction:column;gap:12px;}
+.hud .row{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.hud .box{background:var(--glass);padding:10px 12px;border-radius:10px;min-width:0;}
+.lives{display:flex;gap:8px;align-items:center;}
+.heart{width:22px;height:22px;border-radius:6px;display:inline-block;background:linear-gradient(180deg,#ff6b81,#ff5176);box-shadow:0 6px 18px rgba(255,81,118,0.12);}
+.heart.empty{background:linear-gradient(180deg,#2a303b,#16191f);opacity:0.35;}
+.boardWrap{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:16px;padding:20px;box-shadow:0 12px 40px rgba(2,6,23,0.6);min-height:420px;position:relative;}
+.board{width:100%;max-width:520px;margin:8px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.cell{aspect-ratio:1/1;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.02));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;color:#dbeafe;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background .18s ease;box-shadow:0 6px 18px rgba(2,6,23,0.6);user-select:none;}
+.cell:hover{transform:translateY(-6px);box-shadow:0 18px 36px rgba(2,6,23,0.7);}
+.cell.win{background:linear-gradient(180deg,#e6fff8,#ccfff0);color:#023;box-shadow:0 18px 40px rgba(34,197,94,0.15) inset,0 30px 60px rgba(34,197,94,0.08);}
+.turn{display:flex;align-items:center;gap:10px;margin-top:6px;color:var(--muted);}
+.turn .bubble{padding:6px 10px;background:var(--glass);border-radius:10px;font-weight:700;color:var(--muted);}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(2,6,23,0.6),rgba(2,6,23,0.6));border-radius:16px;opacity:0;pointer-events:none;transition:opacity .26s ease;}
+.overlay.show{opacity:1;pointer-events:auto;}
+.overlayCard{background:linear-gradient(180deg,#0b1226,#071029);border-radius:14px;padding:22px;min-width:320px;text-align:center;box-shadow:0 30px 80px rgba(2,6,23,0.6);transform:translateY(0);color:#e6eef8;}
+.overlayIcon{font-size:72px;margin-bottom:10px;display:block;}
+.overlayTitle{font-size:22px;font-weight:800;margin-bottom:8px;}
+.overlaySub{font-size:14px;color:var(--muted);margin-bottom:16px;}
+.btn-restart{padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,#7dd3fc,#60a5fa);color:#021025;font-weight:800;border:none;cursor:pointer;box-shadow:0 12px 40px rgba(96,165,250,0.12);}
+.back-btn{position:fixed;top:12px;left:12px;padding:6px 12px;border:none;border-radius:8px;background:#7dd3fc;color:#021025;font-weight:700;cursor:pointer;}
+@media(max-width:920px){.app{grid-template-columns:1fr;}.panel{order:2;}.boardWrap{order:1;margin-bottom:18px;}}
+</style>
+</head>
+<body>
+<button class="back-btn" onclick="window.location.href='index.html'">⬅ Voltar ao Início</button>
+<div class="app">
+  <div class="panel">
+    <div class="title">
+      <div style="font-size:28px;">♟️</div>
+      <div>
+        <div style="font-weight:800;font-size:18px;">Jogo da Velha — Elite</div>
+        <div style="font-size:12px;color:var(--muted)">Modo sala de disputa — boa sorte ;)</div>
+      </div>
+    </div>
+    <p class="subtitle">Seu objetivo: vencer a CPU. O layout é otimizado para disputa em sala — visual chamativo e CPU estratégica.</p>
+    <button class="btn" id="startBtn">▶ Iniciar Partida</button>
+
+    <!-- NOVO: Botão de Pausa e Seletor de Dificuldade -->
+    <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
+      <button class="btn" id="pauseBtn">⏸ Pausar</button>
+      <select id="difficultySelect" class="btn">
+        <option value="easy">Fácil</option>
+        <option value="intermediate" selected>Intermediário</option>
+        <option value="hard">Difícil</option>
+      </select>
+    </div>
+
+    <div class="hud">
+      <div class="row">
+        <div class="box">Pontos: <span id="score">0</span></div>
+        <div class="box">Rodada: <span id="round">0</span></div>
+      </div>
+      <div class="row">
+        <div class="box">Vida(s)
+          <div class="lives" style="display:inline-flex;margin-left:8px;">
+            <span class="heart" id="heart1"></span>
+            <span class="heart" id="heart2"></span>
+            <span class="heart" id="heart3"></span>
+          </div>
+        </div>
+        <div class="box">Nível CPU: <strong id="level">Intermediário</strong></div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-top:8px;">Dica: a CPU tenta ganhar antes de bloquear — se você jogar bem ela pode perder.</div>
+    </div>
+    <div style="margin-top:18px;font-size:13px;color:var(--muted)">Entre com o X clicando na célula. CPU joga automaticamente com O. Use o botão Reiniciar na tela final.</div>
+  </div>
+  <div class="boardWrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-weight:800;font-size:20px;">Tabuleiro</div>
+      <div class="turn"><span style="color:var(--muted);">Vez:</span><div class="bubble" id="turnBubble">-</div></div>
+    </div>
+    <div class="board" id="board"></div>
+    <div id="status" class="status" style="color:var(--muted)"></div>
+    <div class="overlay" id="overlay">
+      <div class="overlayCard">
+        <div class="overlayIcon" id="overlayIcon">🏆</div>
+        <div class="overlayTitle" id="overlayTitle">Você venceu!</div>
+        <div class="overlaySub" id="overlaySub">Pontos ganhos +1</div>
+        <button class="btn-restart" id="restartBtn">Reiniciar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="audioMove" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_2e9d68.mp3?filename=click-21156.mp3"></audio>
+<audio id="audioWin" src="vitoria.mp3"></audio>
+<audio id="audioLose" src="derrota.mp3"></audio>
+<audio id="audioDescent" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_8f024d.mp3?filename=whoosh-variation-2-6428.mp3"></audio>
+<audio id="audioTie" src="https://cdn.pixabay.com/download/audio/2021/09/15/audio_6b7b8b.mp3?filename=soft-tone-6522.mp3"></audio>
+
+<script>
+const startBtn=document.getElementById('startBtn');
+const restartBtn=document.getElementById('restartBtn');
+const boardEl=document.getElementById('board');
+const overlay=document.getElementById('overlay');
+const overlayIcon=document.getElementById('overlayIcon');
+const overlayTitle=document.getElementById('overlayTitle');
+const overlaySub=document.getElementById('overlaySub');
+const turnBubble=document.getElementById('turnBubble');
+const scoreEl=document.getElementById('score');
+const roundEl=document.getElementById('round');
+const heart1=document.getElementById('heart1');
+const heart2=document.getElementById('heart2');
+const heart3=document.getElementById('heart3');
+const audioMove=document.getElementById('audioMove');
+const audioWin=document.getElementById('audioWin');
+const audioLose=document.getElementById('audioLose');
+const audioDescent=document.getElementById('audioDescent');
+const audioTie=document.getElementById('audioTie');
+
+const pauseBtn=document.getElementById('pauseBtn');
+const difficultySelect=document.getElementById('difficultySelect');
+
+let boardState=Array(9).fill('');
+let currentPlayer='X';
+let score=0;
+let lives=3;
+let round=0;
+let acceptingInput=false;
+let paused=false;
+let difficulty='intermediate';
+
+difficultySelect.addEventListener('change',()=>{
+  difficulty=difficultySelect.value;
+  document.getElementById('level').textContent=difficulty.charAt(0).toUpperCase()+difficulty.slice(1);
+});
+
+pauseBtn.addEventListener('click',()=>{
+  paused=!paused;
+  pauseBtn.textContent=paused?'▶ Continuar':'⏸ Pausar';
+  acceptingInput=!paused;
+});
+
+function playSound(audioEl){try{audioEl.currentTime=0;audioEl.play();}catch(e){}}
+
+function startGame(){
+  boardState=Array(9).fill('');
+  currentPlayer='X';
+  score=0;lives=3;round=0;acceptingInput=true;
+  scoreEl.textContent=score;roundEl.textContent=round;updateHearts();
+  hideOverlay();
+  boardEl.innerHTML='';
+  for(let i=0;i<9;i++){
+    const c=document.createElement('div');
+    c.className='cell';
+    c.dataset.index=i;
+    c.addEventListener('click',onCellClick);
+    boardEl.appendChild(c);
+  }
+  updateTurnBubble();
+}
+
+function updateHearts(){
+  heart1.className='heart'+(lives>=1?'':' empty');
+  heart2.className='heart'+(lives>=2?'':' empty');
+  heart3.className='heart'+(lives>=3?'':' empty');
+}
+
+function onCellClick(e){if(!acceptingInput)return;const idx=Number(e.currentTarget.dataset.index);if(boardState[idx]!=='')return;humanMove(idx);}
+
+function humanMove(index){
+  boardState[index]='X';
+  boardEl.children[index].textContent='X';
+  playSound(audioMove);
+  const winner=getWinner();
+  if(winner||boardState.every(v=>v!=='')){finalizeRound(winner);return;}
+  currentPlayer='O';
+  updateTurnBubble();
+  acceptingInput=false;
+
+  let delay=360;
+  if(difficulty==='easy') delay=600;
+  else if(difficulty==='hard') delay=180;
+
+  setTimeout(()=>cpuPlay(),delay);
+}
+
+function cpuPlay(){
+  let move=findBestMove('O');
+  if(move===-1) move=findBestMove('X');
+  if(move===-1&&boardState[4]==='') move=4;
+  if(move===-1){
+    const empties=boardState.map((v,i)=>v===''?i:null).filter(v=>v!==null);
+    const corners=empties.filter(i=>[0,2,6,8].includes(i));
+    move=corners.length?corners[Math.floor(Math.random()*corners.length)]:empties[Math.floor(Math.random()*empties.length)];
+  }
+  boardState[move]='O';
+  boardEl.children[move].textContent='O';
+  playSound(audioMove);
+  const winner=getWinner();
+  if(winner||boardState.every(v=>v!=='')){finalizeRound(winner);return;}
+  currentPlayer='X';
+  updateTurnBubble();
+  acceptingInput=true;
+}
+
+function findBestMove(sym){for(let i=0;i<9;i++){if(boardState[i]===''){const copy=boardState.slice();copy[i]=sym;if(getWinner(copy)===sym)return i;}}return -1;}
+
+function getWinner(testBoard){const b=Array.isArray(testBoard)?testBoard:boardState;const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(const w of wins){const [a,b1,c]=w;if(b[a]&&b[a]===b[b1]&&b[a]===b[c])return b[a];}return null;}
+
+function finalizeRound(winner){
+  acceptingInput=false;round+=1;roundEl.textContent=round;
+  if(winner==='X'){
+    score+=1;scoreEl.textContent=score;
+    highlightWinningCells();
+    playSound(audioDescent);
+    setTimeout(()=>playSound(audioWin),120);
+    overlayIcon.textContent='🏆';
+    overlayTitle.textContent='Você venceu!';
+    overlaySub.textContent='+1 ponto';
+    showOverlay();return;
+  }
+  if(winner==='O'){
+    lives=Math.max(0,lives-1);updateHearts();
+    highlightWinningCells();
+    playSound(audioDescent);
+    setTimeout(()=>playSound(audioLose),120);
+    overlayIcon.textContent=lives>0?'💔':'☠️';
+    overlayTitle.textContent=lives>0?'CPU venceu':'Game Over';
+    overlaySub.textContent=lives>0?'Você perdeu uma vida':'Reiniciando tudo em Reiniciar';
+    showOverlay();return;
+  }
+  if(winner===null){
+    playSound(audioTie);
+    overlayIcon.textContent='🤝';
+    overlayTitle.textContent='Empate';
+    overlaySub.textContent='Ninguém pontuou nesta rodada';
+    showOverlay();return;
+  }
+}
+
+function showOverlay(){overlay.classList.add('show');}
+function hideOverlay(){overlay.classList.remove('show');}
+function updateTurnBubble(){turnBubble.textContent=currentPlayer;}
+function highlightWinningCells(){
+  const b=boardState;const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for(const w of wins){const [a,b1,c]=w;if(b[a]&&b[a]===b[b1]&&b[a]===b[c]){boardEl.children[a].classList.add('win');boardEl.children[b1].classList.add('win');boardEl.children[c].classList.add('win');return;}}
+}
+
+startBtn.addEventListener('click',startGame);
+restartBtn.addEventListener('click',startGame);
+</script>
+</body>
+</html>
