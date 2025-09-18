@@ -7,7 +7,7 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
   body, html { height: 100%; background: #000022; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-  
+
   /* Telas iniciais */
   #coverScreen, #startScreen {
     position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -18,7 +18,7 @@
   #startScreen { background: #001f33; font-size: clamp(1rem, 2vw, 1.6rem); max-width: 90%; margin: auto; gap: 20px; }
   #startScreen h1 { font-size: clamp(2rem,5vw,3rem); color: #00ccff; }
   #instructions { font-size: clamp(1rem,2.5vw,1.3rem); line-height: 1.5; color: #99ddff; }
-  
+
   /* Botões */
   button {
     padding: clamp(8px, 1.5vw, 12px) clamp(15px, 3vw, 30px);
@@ -157,6 +157,12 @@ function ajustarCanvas() {
 window.addEventListener('resize', ajustarCanvas);
 ajustarCanvas();
 
+// Atualiza a pontuação e vidas
+function atualizarInfo(){
+  scoreDisplay.textContent = `Pontos: ${score}`;
+  livesDisplay.textContent = `Vidas: ${lives}`;
+}
+
 // Eventos
 continueBtn.addEventListener('click',()=>{ coverScreen.style.display='none'; startScreen.style.display='flex'; });
 startBtn.addEventListener('click', iniciarJogo);
@@ -166,22 +172,33 @@ pauseBtn.addEventListener('click', ()=>{
 });
 restartBtn.addEventListener('click', ()=>{ gameOverScreen.style.display='none'; startScreen.style.display='flex'; });
 
+// Funções principais
 function iniciarJogo(){
-  startScreen.style.display='none'; gameCanvas.style.display='block'; infoPanel.style.display='flex'; pauseBtn.style.display='inline-block';
+  startScreen.style.display='none';
+  gameCanvas.style.display='block';
+  infoPanel.style.display='flex';
+  pauseBtn.style.display='inline-block';
+
   snake = snakeStart.map(s=>({...s}));
   direction = 'right'; lastDirection=direction;
   score=0; lives=3; paused=false;
   atualizarInfo(); gerarComida();
+
   if(gameInterval) clearInterval(gameInterval);
   gameInterval=setInterval(loopJogo,100);
-  backgroundSound.volume=0.3; backgroundSound.play().catch(e=>{});
+
+  backgroundSound.volume=0.3; 
+  backgroundSound.play().catch(e=>{});
   pauseBtn.textContent='Pausar';
 }
 
 function gerarComida(){
   food.x=Math.floor(Math.random()*numBlocks);
   food.y=Math.floor(Math.random()*numBlocks);
-  while(snake.some(seg=>seg.x===food.x && seg.y===food.y)){ food.x=Math.floor(Math.random()*numBlocks); food.y=Math.floor(Math.random()*numBlocks);}
+  while(snake.some(seg=>seg.x===food.x && seg.y===food.y)){
+    food.x=Math.floor(Math.random()*numBlocks); 
+    food.y=Math.floor(Math.random()*numBlocks);
+  }
 }
 
 function desenhar(){
@@ -227,14 +244,20 @@ function loopJogo(){
   } else snake.pop();
   desenhar();
   lastDirection=direction;
-  scoreDisplay.textContent=`Pontos: ${score}`;
+  atualizarInfo();
 }
 
 function finalizarJogo(){
-  clearInterval(gameInterval); gameCanvas.style.display='none'; infoPanel.style.display='none'; pauseBtn.style.display='none';
-  gameOverScreen.style.display='flex'; finalScoreDisplay.textContent=`Sua pontuação: ${score}`; backgroundSound.pause();
+  clearInterval(gameInterval);
+  gameCanvas.style.display='none';
+  infoPanel.style.display='none';
+  pauseBtn.style.display='none';
+  gameOverScreen.style.display='flex';
+  finalScoreDisplay.textContent=`Sua pontuação: ${score}`;
+  backgroundSound.pause();
 }
 
+// Controles
 window.addEventListener('keydown', e=>{
   if(paused) return;
   switch(e.key){
