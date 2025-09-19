@@ -1,298 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Astro Catcher — Pro</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astronauta no Espaço</title>
 <style>
-  :root{
-    --bg1:#04061a; --bg2:#071033; --accent:#1abcff; --muted:#9fbfdc;
+  /* Estilo geral da página */
+  body { margin:0; overflow:hidden; font-family:Arial,sans-serif; background:black; }
+
+  /* Tela inicial */
+  #startScreen {
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    height:100vh; background:radial-gradient(circle at center, #0b0c2a, #000000);
+    color:white; text-align:center;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:linear-gradient(180deg,var(--bg1),var(--bg2));
-    font-family:Arial,Helvetica,sans-serif;
-    color:#eaf6ff;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    min-height:100vh;
+  #startScreen h1 { font-size:60px; margin-bottom:20px; }
+  #startScreen p { font-size:20px; margin:10px 0; }
+
+  /* Botão de iniciar */
+  #startButton {
+    padding:15px 40px; font-size:24px; margin-top:30px;
+    cursor:pointer; background:#1abc9c; border:none; border-radius:10px;
+    color:white; transition:0.3s;
   }
-  .back-btn{
-    position:fixed;left:12px;top:12px;z-index:60;
-    background:transparent;border:2px solid rgba(255,255,255,0.06);
-    padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer;
+  #startButton:hover { background:#16a085; transform:scale(1.05); }
+
+  /* Canvas do jogo */
+  canvas { display:none; margin:auto; background:black; }
+
+  /* HUD (pontuação e vidas) */
+  #hud {
+    position:absolute; top:10px; left:10px; color:white;
+    font-size:20px; font-weight:bold;
   }
-  #startScreen{
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    height:100%;gap:12px;text-align:center;padding:16px;
+
+  /* Tela de Game Over */
+  #gameOverOverlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.85); color:white;
+    display:none; justify-content:center; align-items:center; flex-direction:column;
   }
-  #startScreen h1{
-    font-size:clamp(32px,8vw,54px);
-    color:var(--accent);
-    text-shadow:0 6px 30px rgba(0,170,255,0.06);
+  #gameOverOverlay h1 { font-size:60px; margin-bottom:20px; }
+  #restartButton {
+    padding:12px 30px; font-size:22px; margin-top:30px;
+    cursor:pointer; background:#e74c3c; border:none; border-radius:10px; color:white;
   }
-  #startButton{
-    padding:16px 40px;font-size:20px;
-    background:linear-gradient(90deg,#00dfff,#0077ff);
-    border:none;border-radius:12px;color:#001;cursor:pointer;
-  }
-  #muteBtn{
-    padding:16px 30px;font-size:18px;
-    background:linear-gradient(90deg,#00dfff,#0077ff);
-    border:none;border-radius:12px;color:#001;cursor:pointer;
-  }
-  #gameArea{
-    position:relative;
-    width:min(90vw,480px);
-    aspect-ratio:2/3;
-    border-radius:12px;
-    overflow:hidden;
-    display:none;
-  }
-  canvas{display:block;width:100%;height:100%;background:transparent;}
-  #hud{
-    position:absolute;left:8px;top:8px;z-index:50;display:flex;
-    gap:8px;align-items:center;flex-wrap:wrap;
-  }
-  .hud-item{
-    background:rgba(0,0,0,0.28);
-    padding:6px 10px;border-radius:10px;
-    backdrop-filter:blur(4px);font-weight:700;font-size:clamp(12px,3vw,16px);
-  }
-  #gameOverOverlay{
-    position:absolute;inset:0;background:rgba(0,0,0,0.7);
-    display:flex;align-items:center;justify-content:center;
-    z-index:70;opacity:0;pointer-events:none;transition:opacity 300ms;
-  }
-  #gameOverOverlay.show{opacity:1;pointer-events:auto;}
-  #gameOverPanel{
-    background:rgba(2,6,20,0.9);
-    padding:22px;border-radius:12px;text-align:center;
-    min-width:220px;max-width:90%;
-  }
-  #gameOverPanel h1{font-size:clamp(22px,6vw,36px);margin:0 0 8px;}
-  #gameOverPanel button{
-    padding:10px 18px;border-radius:10px;border:none;background:#ff7b38;
-    color:#fff;cursor:pointer;
-  }
-  .touchButtons{
-    display:none;
-    gap:10px;
-    position:fixed;left:12px;bottom:12px;z-index:80;
-  }
-  .touchButtons button{
-    padding:12px 18px;
-    background:rgba(255,255,255,0.1);
-    border:1px solid rgba(255,255,255,0.3);
-    border-radius:12px;
-    font-size:20px;color:white;
-  }
+  #restartButton:hover { background:#c0392b; }
 </style>
 </head>
 <body>
-<button class="back-btn" onclick="location.href='index.html'">⬅ Voltar ao Início</button>
 
+<!-- Tela inicial -->
 <div id="startScreen">
-  <h1>Astro Catcher</h1>
-  <p style="max-width:600px;color:var(--muted);font-size:16px">
-    Capture asteroides e power-ups. Use ← → ou A D para mover. Ganha vida a cada 50 pontos.
-  </p>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-    <button id="startButton">Começar</button>
-    <button id="muteBtn">🔊 Som</button>
-  </div>
-  <small style="color:var(--muted)">Recorde local salvo no navegador.</small>
+  <h1>🚀 Astronauta no Espaço 🌌</h1>
+  <p>➡️ Use as setas do teclado para mover</p>
+  <p>❤️ Você tem 3 vidas</p>
+  <p>⭐ Pegue os itens para ganhar pontos</p>
+  <button id="startButton">Start</button>
 </div>
 
-<div id="gameArea">
-  <canvas id="gameCanvas"></canvas>
-  <div id="hud">
-    <div class="hud-item" id="scoreDisplay">Score: 0</div>
-    <div class="hud-item" id="levelDisplay">Lvl: 1</div>
-    <div class="hud-item" id="livesDisplay">❤❤❤</div>
-  </div>
-  <div id="gameOverOverlay">
-    <div id="gameOverPanel">
-      <h1>💀 Game Over</h1>
-      <div>Sua pontuação: <strong id="finalScore">0</strong></div>
-      <div style="margin-top:12px;display:flex;gap:10px;justify-content:center">
-        <button id="restartButton">Reiniciar</button>
-        <button id="menuButton">Menu</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Área do jogo -->
+<canvas id="gameCanvas" width="500" height="700"></canvas>
+<div id="hud"></div>
 
-<div class="touchButtons" id="touchControls">
-  <button id="leftTouch">◀</button>
-  <button id="rightTouch">▶</button>
+<!-- Tela de Game Over -->
+<div id="gameOverOverlay">
+  <h1>💀 Game Over 💀</h1>
+  <p>Sua pontuação: <span id="finalScore">0</span></p>
+  <button id="restartButton">Reiniciar</button>
 </div>
 
 <script>
-// Referências
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const startScreen = document.getElementById('startScreen');
-const gameArea = document.getElementById('gameArea');
-const startButton = document.getElementById('startButton');
-const muteBtn = document.getElementById('muteBtn');
-const gameOverOverlay = document.getElementById('gameOverOverlay');
-const restartButton = document.getElementById('restartButton');
-const menuButton = document.getElementById('menuButton');
-const scoreDisplay = document.getElementById('scoreDisplay');
-const levelDisplay = document.getElementById('levelDisplay');
-const livesDisplay = document.getElementById('livesDisplay');
-const finalScore = document.getElementById('finalScore');
-const touchControls = document.getElementById('touchControls');
-const leftTouch = document.getElementById('leftTouch');
-const rightTouch = document.getElementById('rightTouch');
+/* ======== VARIÁVEIS PRINCIPAIS ======== */
+const startScreen=document.getElementById('startScreen'); // Tela inicial
+const startButton=document.getElementById('startButton'); // Botão iniciar
+const canvas=document.getElementById('gameCanvas'); // Área do jogo
+const ctx=canvas.getContext('2d'); // Contexto para desenhar
+const hud=document.getElementById('hud'); // Placar e vidas
+const gameOverOverlay=document.getElementById('gameOverOverlay'); // Tela de fim
+const finalScore=document.getElementById('finalScore'); // Pontuação final
+const restartButton=document.getElementById('restartButton'); // Botão reiniciar
 
-// Configurações
-let canvasWidth, canvasHeight;
-let player = { x: 0.5, y: 0.9, width:0.1, height:0.03 };
-let playerSpeed = 0.01;
-let keys = {};
-let asteroids = [];
-let powerUps = [];
-let score = 0;
-let level = 1;
-let lives = 3;
-let gameInterval = null;
-let gameOver = false;
-let soundOn = true;
+let score=0,lives=3,player,objects=[],gameInterval,objectInterval;
+let leftPressed=false,rightPressed=false;
+const playerSpeed=5; // Velocidade do astronauta (MENOR = mais lento)
 
-// Sons
-const soundCollect = new Audio('collect.mp3');
-const soundHit = new Audio('hit.mp3');
-const bgMusic = new Audio('background.mp3'); bgMusic.loop=true; bgMusic.volume=0.3;
+// 🔊 Som quando pega objeto
+const pickupSound = new Audio("https://www.myinstants.com/media/sounds/coin.mp3");
 
-// Ajuste responsivo
-function resizeCanvas(){
-  canvasWidth = gameArea.clientWidth;
-  canvasHeight = gameArea.clientHeight;
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
+/* ======== CONTROLES ======== */
+function keyDownHandler(e){
+  if(e.key==="ArrowLeft") leftPressed=true;
+  if(e.key==="ArrowRight") rightPressed=true;
 }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// Funções do jogo
-function iniciarJogo(){
-  startScreen.style.display='none';
-  gameArea.style.display='block';
-  gameOverOverlay.classList.remove('show');
-
-  score = 0; level=1; lives=3; gameOver=false;
-  asteroids=[]; powerUps=[];
-  player.x=0.45;
-  atualizarHUD();
-
-  if(soundOn) bgMusic.play().catch(e=>{});
-
-  if(gameInterval) clearInterval(gameInterval);
-  gameInterval = setInterval(loop,16);
+function keyUpHandler(e){
+  if(e.key==="ArrowLeft") leftPressed=false;
+  if(e.key==="ArrowRight") rightPressed=false;
 }
 
-function atualizarHUD(){
-  scoreDisplay.textContent=`Score: ${score}`;
-  levelDisplay.textContent=`Lvl: ${level}`;
-  livesDisplay.textContent='❤'.repeat(lives);
-}
+/* ======== FUNDO ESPACIAL ======== */
+function drawSpaceBackground(){
+  // Céu escuro com gradiente
+  const gradient=ctx.createLinearGradient(0,0,0,canvas.height);
+  gradient.addColorStop(0,'#000010');
+  gradient.addColorStop(1,'#0b0c2a');
+  ctx.fillStyle=gradient; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-function gerarAsteroide(){
-  const size = Math.random()*0.08+0.02;
-  asteroids.push({ x:Math.random()*(1-size), y:-size, size, speed:0.002+level*0.001 });
-}
-
-function gerarPowerUp(){
-  const size=0.04;
-  powerUps.push({ x:Math.random()*(1-size), y:-size, size, speed:0.002+level*0.001 });
-}
-
-function loop(){
-  // Movimento player
-  if(keys['ArrowLeft']||keys['a']) player.x-=playerSpeed;
-  if(keys['ArrowRight']||keys['d']) player.x+=playerSpeed;
-  player.x=Math.max(0,Math.min(1-player.width,player.x));
-
-  // Limpar tela
-  ctx.clearRect(0,0,canvasWidth,canvasHeight);
-
-  // Criar asteroides/power-ups
-  if(Math.random()<0.02) gerarAsteroide();
-  if(Math.random()<0.005) gerarPowerUp();
-
-  // Atualizar asteroides
-  for(let i=asteroids.length-1;i>=0;i--){
-    const a = asteroids[i];
-    a.y+=a.speed;
-    ctx.fillStyle='#888';
+  // Estrelas (pontinhos brancos)
+  for(let i=0;i<40;i++){ // reduzi a quantidade para não poluir
+    ctx.fillStyle="white";
     ctx.beginPath();
-    ctx.arc(a.x*canvasWidth,a.y*canvasHeight,a.size*canvasWidth,0,Math.PI*2);
+    ctx.arc(Math.random()*canvas.width,Math.random()*canvas.height,Math.random()*2,0,Math.PI*2);
     ctx.fill();
-    // Colisão
-    if(a.y+a.size>player.y && a.y<a.y+player.height && a.x+ a.size>player.x && a.x < player.x+player.width){
-      lives--; if(soundOn) soundHit.play();
-      asteroids.splice(i,1);
-      if(lives<=0) fimDeJogo();
-    } else if(a.y>1) asteroids.splice(i,1);
   }
 
-  // Atualizar power-ups
-  for(let i=powerUps.length-1;i>=0;i--){
-    const p = powerUps[i];
-    p.y+=p.speed;
-    ctx.fillStyle='#0ff';
-    ctx.beginPath();
-    ctx.arc(p.x*canvasWidth,p.y*canvasHeight,p.size*canvasWidth,0,Math.PI*2);
-    ctx.fill();
-    // Colisão
-    if(p.y+p.size>player.y && p.y<p.y+player.height && p.x+p.size>player.x && p.x<player.x+player.width){
-      score+=10; if(soundOn) soundCollect.play(); powerUps.splice(i,1);
-      if(score%50===0){ lives++; if(lives>5) lives=5; level++; }
-    } else if(p.y>1) powerUps.splice(i,1);
-  }
-
-  // Desenhar player
-  ctx.fillStyle='#1abcff';
-  ctx.fillRect(player.x*canvasWidth,player.y*canvasHeight,player.width*canvasWidth,player.height*canvasHeight);
-
-  atualizarHUD();
+  // Planeta no fundo
+  ctx.fillStyle="#34495e";
+  ctx.beginPath();
+  ctx.arc(100,200,80,0,Math.PI*2);
+  ctx.fill();
 }
 
-// Game Over
-function fimDeJogo(){
+/* ======== INICIAR JOGO ======== */
+function startGame(){
+  startScreen.style.display='none'; // Esconde tela inicial
+  canvas.style.display='block';     // Mostra o jogo
+  hud.style.display='block';        // Mostra HUD
+  gameOverOverlay.style.display='none'; // Esconde Game Over
+  score=0; lives=3; objects=[];     // Reseta valores
+  // Astronauta
+  player={x:canvas.width/2, y:canvas.height-80, size:50};
+  // Intervalo para criar objetos a cada 1,5 segundos (MAIS LENTO)
+  objectInterval=setInterval(createObject,1500);
+  // Intervalo para rodar o jogo 60 vezes por segundo
+  gameInterval=setInterval(gameLoop,1000/60);
+  document.addEventListener('keydown', keyDownHandler);
+  document.addEventListener('keyup', keyUpHandler);
+}
+
+/* ======== CRIAR OBJETOS ======== */
+function createObject(){
+  const size=30;
+  const x=Math.random()*(canvas.width-size);
+  const speed=1.5+Math.random()*2; // objetos descem MAIS DEVAGAR
+  objects.push({x,y:0,size,speed});
+}
+
+/* ======== LOOP DO JOGO ======== */
+function gameLoop(){
+  drawSpaceBackground(); // fundo
+
+  // Astronauta (desenho simples)
+  ctx.fillStyle="white";
+  ctx.beginPath();
+  ctx.arc(player.x,player.y,player.size/2,0,Math.PI*2); // capacete
+  ctx.fill();
+  ctx.fillStyle="gray";
+  ctx.fillRect(player.x-15,player.y+25,30,20); // corpo
+  ctx.fillStyle="white";
+  ctx.fillRect(player.x-25,player.y+20,10,20); // braço esquerdo
+  ctx.fillRect(player.x+15,player.y+20,10,20); // braço direito
+
+  // Movimento pelo teclado
+  if(leftPressed) player.x-=playerSpeed;
+  if(rightPressed) player.x+=playerSpeed;
+  if(player.x<25) player.x=25;
+  if(player.x>canvas.width-25) player.x=canvas.width-25;
+
+  // Objetos caindo
+  for(let i=objects.length-1;i>=0;i--){
+    const obj=objects[i];
+    obj.y+=obj.speed;
+    ctx.fillStyle="orange";
+    ctx.beginPath();
+    ctx.arc(obj.x,obj.y,obj.size/2,0,Math.PI*2);
+    ctx.fill();
+
+    // Colisão (distância entre centro do astronauta e do objeto)
+    const dx=obj.x-player.x, dy=obj.y-player.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<obj.size/2+player.size/2){
+      score++; // aumenta pontos
+      pickupSound.play().catch(()=>{}); // 🔊 toca som
+      objects.splice(i,1); // remove objeto
+      continue;
+    }
+
+    // Se passar da tela sem pegar → perde vida
+    if(obj.y>canvas.height){
+      lives--;
+      objects.splice(i,1);
+      if(lives<=0){ showGameOver(); return; }
+    }
+  }
+
+  // Atualiza HUD
+  hud.innerHTML=`Score: ${score} | Lives: ${lives}`;
+}
+
+/* ======== GAME OVER ======== */
+function showGameOver(){
   clearInterval(gameInterval);
-  gameOver=true;
+  clearInterval(objectInterval);
   finalScore.textContent=score;
-  gameOverOverlay.classList.add('show');
-  bgMusic.pause();
+  gameOverOverlay.style.display='flex';
 }
 
-// Eventos
-startButton.addEventListener('click', iniciarJogo);
-restartButton.addEventListener('click', iniciarJogo);
-menuButton.addEventListener('click', ()=>{ gameOverOverlay.classList.remove('show'); gameArea.style.display='none'; startScreen.style.display='flex'; });
-muteBtn.addEventListener('click', ()=>{
-  soundOn=!soundOn;
-  muteBtn.textContent = soundOn?'🔊 Som':'🔇 Mudo';
-  if(!soundOn) bgMusic.pause(); else if(!gameOver) bgMusic.play().catch(e=>{});
-});
-
-window.addEventListener('keydown', e=>{ keys[e.key]=true; });
-window.addEventListener('keyup', e=>{ keys[e.key]=false; });
-
-// Touch Controls
-if('ontouchstart' in window){
-  touchControls.style.display='flex';
-  leftTouch.addEventListener('touchstart',()=>{ keys['ArrowLeft']=true; });
-  leftTouch.addEventListener('touchend',()=>{ keys['ArrowLeft']=false; });
-  rightTouch.addEventListener('touchstart',()=>{ keys['ArrowRight']=true; });
-  rightTouch.addEventListener('touchend',()=>{ keys['ArrowRight']=false; });
-}
+/* ======== BOTÕES ======== */
+restartButton.addEventListener('click', startGame);
+startButton.addEventListener('click', startGame);
 </script>
 </body>
 </html>
