@@ -1,4 +1,4 @@
-<!DOCTYPE html> <!-- Documento HTML5 -->
+<!DOCTYPE html> <!-- Documento HTML5 --> 
 <html lang="pt-BR"> <!-- Página em português -->
 <head>
 <meta charset="utf-8" /> <!-- Suporte a acentos -->
@@ -197,6 +197,20 @@ body{
       </div>
     </div>
     <p class="subtitle">Seu objetivo: vencer a CPU...</p>
+
+    <!-- INSTRUÇÕES VISÍVEIS -->
+    <div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:10px;margin-top:10px;font-size:13px;color:#dbeafe;line-height:1.5;">
+      <strong>Como jogar:</strong>
+      <ul style="padding-left:18px;margin:6px 0;">
+        <li>Clique em uma célula vazia para colocar seu "X".</li>
+        <li>A CPU jogará automaticamente com "O".</li>
+        <li>Forme uma linha com 3 símbolos iguais para vencer (horizontal, vertical ou diagonal).</li>
+        <li>Se empatar, ninguém ganha pontos.</li>
+        <li>Você tem 3 vidas; perca todas e o jogo reinicia.</li>
+        <li>Escolha a dificuldade antes de começar para ajustar a inteligência da CPU.</li>
+      </ul>
+    </div>
+
     <button class="btn" id="startBtn">▶ Iniciar Partida</button>
 
     <!-- Botão de Pausa e seletor de dificuldade -->
@@ -255,6 +269,7 @@ body{
 <audio id="audioTie" src="empate.mp3"></audio>
 
 <script>
+// ================== SCRIPT DO JOGO ==================
 /* ======== VARIÁVEIS DO JOGO ======== */
 const startBtn=document.getElementById('startBtn');
 const restartBtn=document.getElementById('restartBtn');
