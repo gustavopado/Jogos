@@ -1,122 +1,144 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html> <!-- Declara o tipo de documento: HTML5 -->
+<html lang="pt-BR"> <!-- Define que o conteúdo está em português do Brasil -->
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Menu de Jogos - Galáxia</title>
-<style>
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    color: white;
-    overflow: hidden;
-    position: relative;
-    background: #0b0f2a;
-  }
+  <meta charset="UTF-8"> <!-- Define a codificação de caracteres (UTF-8 suporta acentos) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Faz o site ser responsivo: largura da página = largura da tela e zoom inicial = 1 -->
 
-  canvas {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
+  <title>Menu de Jogos - Galáxia</title> <!-- Título exibido na aba do navegador -->
 
-  h1 {
-    font-size: clamp(2rem, 5vw, 3rem);
-    margin-bottom: 20px;
-    z-index: 1;
-    text-shadow: 0 0 8px #00f6ff, 0 0 15px #00f6ff, 0 0 25px #0ff, 0 0 40px #0ff;
-    animation: neonGlow 2s ease-in-out infinite alternate;
-    text-align: center;
-    padding: 0 10px;
-  }
-  @keyframes neonGlow {
-    0% { text-shadow: 0 0 8px #00f6ff,0 0 15px #00f6ff,0 0 25px #0ff,0 0 40px #0ff; }
-    100% { text-shadow: 0 0 12px #00f6ff,0 0 20px #00f6ff,0 0 30px #0ff,0 0 50px #0ff; }
-  }
+  <style>
+    /* ======== ESTILO GERAL ======== */
+    body {
+      margin: 0; /* Remove margem padrão do body */
+      font-family: 'Segoe UI', sans-serif; /* Fonte moderna */
+      display: flex; /* Flexbox para centralizar conteúdo */
+      flex-direction: column; /* Alinha os filhos na vertical */
+      align-items: center; /* Centraliza horizontalmente */
+      justify-content: center; /* Centraliza verticalmente */
+      min-height: 100vh; /* Altura mínima = 100% da tela */
+      color: white; /* Texto branco */
+      overflow: hidden; /* Esconde scroll se sobrar algo */
+      position: relative; /* Necessário para o canvas de fundo */
+      background: #0b0f2a; /* Cor de fundo escura */
+    }
 
-  .subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    color: rgba(255,255,255,0.7);
-    margin-bottom: 40px;
-    z-index: 1;
-    opacity: 0;
-    animation: fadeIn 2s forwards 0.5s;
-    text-align: center;
-    padding: 0 12px;
-  }
+    canvas {
+      position: absolute; /* Coloca o canvas fixo atrás do conteúdo */
+      inset: 0; /* Faz ocupar 100% da largura e altura */
+      z-index: 0; /* Fica atrás de todo o resto */
+    }
 
-  @keyframes fadeIn { to { opacity: 1; } }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem); /* Tamanho responsivo (mínimo 2rem, máximo 3rem) */
+      margin-bottom: 20px;
+      z-index: 1; /* Fica acima do fundo animado */
+      text-shadow: 0 0 8px #00f6ff, 0 0 15px #00f6ff, 0 0 25px #0ff, 0 0 40px #0ff;
+      /* Efeito de brilho neon no texto */
+      animation: neonGlow 2s ease-in-out infinite alternate; /* Anima o brilho */
+      text-align: center;
+      padding: 0 10px;
+    }
 
-  .game-menu {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
-    width: 92%;
-    max-width: 1000px;
-    z-index: 1;
-  }
+    @keyframes neonGlow {
+      /* Animação do brilho, alternando intensidade */
+      0% { text-shadow: 0 0 8px #00f6ff,0 0 15px #00f6ff,0 0 25px #0ff,0 0 40px #0ff; }
+      100% { text-shadow: 0 0 12px #00f6ff,0 0 20px #00f6ff,0 0 30px #0ff,0 0 50px #0ff; }
+    }
 
-  .game-card {
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(12px);
-    border-radius: 24px;
-    padding: 20px 15px;
-    text-align: center;
-    box-shadow: 0 12px 25px rgba(0,0,0,0.4);
-    transition: transform 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
-    cursor: pointer;
-  }
-  .game-card:hover {
-    transform: translateY(-8px) scale(1.04);
-    background: rgba(255,255,255,0.15);
-    box-shadow: 0 18px 35px rgba(0,0,0,0.45);
-  }
+    .subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.2rem); /* Responsivo */
+      color: rgba(255,255,255,0.7); /* Branco com transparência */
+      margin-bottom: 40px;
+      z-index: 1;
+      opacity: 0; /* Começa invisível */
+      animation: fadeIn 2s forwards 0.5s; /* Vai aparecendo após 0.5s */
+      text-align: center;
+      padding: 0 12px;
+    }
 
-  .game-card img {
-    width: 100%;
-    border-radius: 18px;
-    margin-bottom: 15px;
-    object-fit: cover;
-    transition: transform 0.35s ease;
-  }
-  .game-card:hover img { transform: scale(1.07); }
+    @keyframes fadeIn { to { opacity: 1; } } /* Animação simples para aparecer */
 
-  .game-title {
-    font-size: 1.4rem;
-    margin-bottom: 8px;
-    font-weight: 700;
-    text-shadow: 1px 1px 6px rgba(0,0,0,0.3);
-  }
+    /* ======== GRID DOS JOGOS ======== */
+    .game-menu {
+      display: grid; /* Usando Grid Layout */
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      /* Cria colunas automáticas de no mínimo 240px e distribui igualmente */
+      gap: 20px; /* Espaçamento entre cards */
+      width: 92%;
+      max-width: 1000px; /* Limite de largura */
+      z-index: 1;
+    }
 
-  .game-desc {
-    font-size: 1rem;
-    opacity: 0.85;
-    line-height: 1.4;
-  }
-</style>
+    .game-card {
+      background: rgba(255,255,255,0.08); /* Fundo semi-transparente */
+      backdrop-filter: blur(12px); /* Efeito de vidro fosco */
+      border-radius: 24px;
+      padding: 20px 15px;
+      text-align: center;
+      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+      transition: transform 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+      cursor: pointer; /* Mostra mãozinha no hover */
+    }
+
+    .game-card:hover {
+      /* Efeitos quando passa o mouse */
+      transform: translateY(-8px) scale(1.04); /* Sobe e aumenta */
+      background: rgba(255,255,255,0.15);
+      box-shadow: 0 18px 35px rgba(0,0,0,0.45);
+    }
+
+    .game-card img {
+      width: 100%; /* Ocupa largura toda */
+      border-radius: 18px;
+      margin-bottom: 15px;
+      object-fit: cover; /* Garante que a imagem não deforme */
+      transition: transform 0.35s ease;
+    }
+    .game-card:hover img { transform: scale(1.07); } /* Zoom na imagem ao passar mouse */
+
+    .game-title {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .game-desc {
+      font-size: 1rem;
+      opacity: 0.85;
+      line-height: 1.4;
+    }
+
+    /* ======== RESPONSIVIDADE EXTRA ======== */
+    @media(max-width:600px){
+      .game-menu { gap: 15px; } /* Diminui espaçamento em telas pequenas */
+      .game-card { padding: 15px 10px; }
+      .game-title { font-size: 1.2rem; }
+      .game-desc { font-size: 0.9rem; }
+    }
+  </style>
 </head>
 <body>
-  <h1>🎮 Escolha Seu Jogo</h1>
+  <h1>🎮 Escolha Seu Jogo</h1> <!-- Título principal -->
   <div class="subtitle">Prepare-se para a ação! Escolha seu desafio e divirta-se.</div>
 
+  <!-- GRID COM OS CARDS DOS JOGOS -->
   <div class="game-menu">
+    <!-- CARD 1 -->
     <div class="game-card" onclick="window.location.href='velha.html'">
       <img src="https://i.imgur.com/WlZ9QlC.png" alt="Jogo da Velha">
       <div class="game-title">Jogo da Velha</div>
       <div class="game-desc">Desafie a CPU neste clássico! Pontuação e vidas inclusas.</div>
     </div>
 
+    <!-- CARD 2 -->
     <div class="game-card" onclick="window.location.href='falling.html'">
       <img src="https://i.imgur.com/1K6rRe0.png" alt="Astro Catcher">
       <div class="game-title">Astro Catcher</div>
       <div class="game-desc">Desvie de asteroides e colete power-ups para pontuar.</div>
     </div>
 
+    <!-- CARD 3 -->
     <div class="game-card" onclick="window.location.href='jogodacobra.html'">
       <img src="https://i.imgur.com/JS9lKXq.png" alt="Jogo da Cobrinha">
       <div class="game-title">Jogo da Cobrinha</div>
@@ -124,60 +146,69 @@
     </div>
   </div>
 
+  <!-- CANVAS PARA O FUNDO ESTRELADO -->
   <canvas id="galaxy"></canvas>
 
   <script>
+    /* ======== SCRIPT DO FUNDO ANIMADO ======== */
+
     const canvas = document.getElementById('galaxy');
     const ctx = canvas.getContext('2d');
-    let w = canvas.width = window.innerWidth;
-    let h = canvas.height = window.innerHeight;
+    let w = canvas.width = window.innerWidth; // Largura = largura da tela
+    let h = canvas.height = window.innerHeight; // Altura = altura da tela
 
     window.addEventListener('resize', () => {
+      // Quando a tela muda de tamanho, atualiza o canvas
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
       initStars();
     });
 
-    const stars = [];
-    const STAR_COUNT = 200;
+    const stars = []; // Array que guarda todas as estrelas
+    const STAR_COUNT = 200; // Número de estrelas
 
     function initStars() {
+      // Cria as estrelas com posições aleatórias
       stars.length = 0;
       for (let i = 0; i < STAR_COUNT; i++) {
         stars.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          radius: Math.random() * 1.2,
-          alpha: Math.random(),
-          dx: (Math.random() - 0.5) * 0.3,
-          dy: (Math.random() - 0.5) * 0.3,
-          flicker: Math.random() * 0.05
+          x: Math.random() * w, // Posição X aleatória
+          y: Math.random() * h, // Posição Y aleatória
+          radius: Math.random() * 1.2, // Tamanho da estrela
+          alpha: Math.random(), // Transparência
+          dx: (Math.random() - 0.5) * 0.3, // Velocidade horizontal
+          dy: (Math.random() - 0.5) * 0.3, // Velocidade vertical
+          flicker: Math.random() * 0.05 // Variação de brilho
         });
       }
     }
 
     function drawStars() {
-      ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0, 0, w, h); // Limpa a tela antes de redesenhar
       for (const s of stars) {
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 200, 255, ${s.alpha})`;
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2); // Desenha um círculo
+        ctx.fillStyle = `rgba(0, 200, 255, ${s.alpha})`; // Cor azulada
         ctx.fill();
+
+        // Faz as estrelas piscarem e se moverem levemente
         s.alpha += (Math.random() - 0.5) * s.flicker;
         if (s.alpha < 0) s.alpha = 0;
         if (s.alpha > 1) s.alpha = 1;
         s.x += s.dx;
         s.y += s.dy;
+
+        // Faz as estrelas reaparecerem do outro lado quando saem da tela
         if (s.x < 0) s.x = w;
         if (s.x > w) s.x = 0;
         if (s.y < 0) s.y = h;
         if (s.y > h) s.y = 0;
       }
-      requestAnimationFrame(drawStars);
+      requestAnimationFrame(drawStars); // Chama novamente para animar
     }
 
-    initStars();
-    drawStars();
+    initStars(); // Inicializa as estrelas
+    drawStars(); // Começa a animação
   </script>
 </body>
 </html>
