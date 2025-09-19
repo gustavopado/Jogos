@@ -1,47 +1,39 @@
-<!DOCTYPE html> <!-- Documento HTML5 -->
-<html lang="pt-BR"> <!-- Página em português do Brasil -->
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8" /> <!-- Suporte a acentos -->
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- Faz o site ficar adaptado para celular -->
-
-<title>Jogo da Cobra - Azul</title> <!-- Título na aba -->
+<title>Jogo da Cobra - Azul</title>
 
 <style>
-  /* ======= ESTILO GERAL ======= */
+  /* ======= ESTILO GLOBAL ======= */
   * {
     margin: 0; padding: 0; box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    user-select: none; /* Impede que o usuário selecione o texto sem querer */
+    user-select: none;
   }
 
   body, html {
     height: 100%;
-    background: #000022; /* Fundo azul escuro */
+    background: #000022;
     display: flex;
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
-    overflow: hidden; /* Remove rolagem */
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
   }
 
-  /* ======= TELAS INICIAIS ======= */
-  #coverScreen, #startScreen {
+  /* ======= TELAS ======= */
+  #coverScreen {
     position: fixed;
-    inset: 0; /* Ocupa a tela inteira */
+    inset: 0;
+    background-color: rgba(0,0,50,0.85);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
     gap: 25px;
-    padding: 20px;
-    color: #0ff;
-    z-index: 10;
-  }
-
-  #coverScreen {
-    background-color: rgba(0,0,50,0.85); /* Fundo escuro transparente */
-    font-size: clamp(1rem, 2vw, 1.8rem); /* Tamanho responsivo */
+    z-index: 5; /* menor que startScreen */
+    font-size: clamp(1rem, 2vw, 1.8rem);
   }
 
   #coverScreen img#gameCover {
@@ -49,24 +41,34 @@
     width: 50%;
     border: 3px solid #0ff;
     border-radius: 12px;
-    box-shadow: 0 0 15px #0ff; /* Efeito neon */
+    box-shadow: 0 0 15px #0ff;
+    transition: transform 0.3s ease;
   }
 
+  #coverScreen img#gameCover:hover { transform: scale(1.05); }
+
   #startScreen {
+    position: fixed;
+    inset: 0;
+    display: none; /* começa escondido */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 25px;
     background: #001f33;
+    z-index: 10; /* sempre sobreposto */
     font-size: clamp(1rem, 2vw, 1.6rem);
-    max-width: 90%;
-    margin: auto;
-    gap: 20px;
   }
 
   #startScreen h1 {
-    font-size: clamp(2rem,5vw,3rem);
+    font-size: clamp(2rem, 5vw, 3rem);
     color: #00ccff;
+    text-shadow: 0 0 10px #00aaff;
   }
 
   #instructions {
-    font-size: clamp(1rem,2.5vw,1.3rem);
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
     line-height: 1.5;
     color: #99ddff;
   }
@@ -81,78 +83,75 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
   }
 
   button:hover {
     background-color: #0077ff;
     color: #001a33;
+    transform: scale(1.05);
   }
 
-  #startBtn { font-size: clamp(1.5rem,4vw,2rem); }
-  #pauseBtn { display:none; margin-top:10px; }
-  .back-btn {
-    position: fixed;
-    top:12px; left:12px;
-    z-index:50;
-  }
+  #startBtn { font-size: clamp(1.5rem, 4vw, 2rem); }
+  #pauseBtn { display: none; margin-top: 10px; }
+  .back-btn { position: fixed; top: 12px; left: 12px; z-index: 50; }
 
   /* ======= CONTAINER E CANVAS ======= */
   #gameContainer {
     position: relative;
-    display:flex;
+    display: flex;
     flex-direction: column;
-    align-items:center;
-    width:90vw;
-    max-width:600px;
+    align-items: center;
+    width: 90vw;
+    max-width: 600px;
   }
 
   #gameCanvas {
     background-color: #002244;
-    border:3px solid #00aaff;
-    display:none; /* Só aparece quando o jogo começa */
-    width:100%;
-    height:auto;
-    image-rendering: pixelated; /* Mantém pixels nítidos */
+    border: 3px solid #00aaff;
+    display: none;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
   }
 
   #infoPanel {
-    margin-top:10px;
-    color:#00aaff;
-    font-size: clamp(1rem,2vw,1.3rem);
-    display:none;
-    width:100%;
-    display:flex;
-    justify-content:space-between;
+    margin-top: 10px;
+    color: #00aaff;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    display: none;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
   }
 
   /* ======= GAME OVER ======= */
   #gameOverScreen {
-    position:fixed;
-    inset:0;
+    position: fixed;
+    inset: 0;
     background: rgba(0,0,30,0.9);
-    color:#0099ff;
-    font-size:clamp(1.5rem,3vw,2rem);
-    display:none;
-    justify-content:center;
-    align-items:center;
-    flex-direction:column;
-    gap:25px;
-    z-index:20;
+    color: #0099ff;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 25px;
+    z-index: 20;
   }
 
   /* ======= CELEBRAÇÃO ======= */
   #celebration {
-    position:fixed;
-    top:50%; left:50%;
-    transform:translate(-50%,-50%);
-    font-size: clamp(2rem,5vw,3rem);
-    color:#0ff;
-    text-shadow:0 0 10px #0ff,0 0 20px #0ff;
-    pointer-events:none;
-    opacity:0;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: #0ff;
+    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+    pointer-events: none;
+    opacity: 0;
     transition: opacity 0.5s ease;
-    z-index:30;
+    z-index: 30;
   }
 </style>
 </head>
@@ -181,7 +180,7 @@
 
 <!-- ÁREA DO JOGO -->
 <div id="gameContainer">
-  <canvas id="gameCanvas"></canvas> <!-- Onde o jogo é desenhado -->
+  <canvas id="gameCanvas"></canvas>
   <div id="infoPanel">
     <div id="score">Pontos: 0</div>
     <div id="lives">Vidas: 3</div>
@@ -207,14 +206,14 @@
 <audio id="celebrateSound" src="celebrate.mp3"></audio>
 
 <script>
-/* ======= REFERÊNCIAS AOS ELEMENTOS ======= */
+/* ======= ELEMENTOS ======= */
 const coverScreen = document.getElementById('coverScreen');
 const continueBtn = document.getElementById('continueBtn');
 const startScreen = document.getElementById('startScreen');
 const startBtn = document.getElementById('startBtn');
 const gameContainer = document.getElementById('gameContainer');
 const gameCanvas = document.getElementById('gameCanvas');
-const ctx = gameCanvas.getContext('2d'); // contexto 2D para desenhar no canvas
+const ctx = gameCanvas.getContext('2d');
 const infoPanel = document.getElementById('infoPanel');
 const scoreDisplay = document.getElementById('score');
 const livesDisplay = document.getElementById('lives');
@@ -231,26 +230,22 @@ const hitSound = document.getElementById('hitSound');
 const lifeSound = document.getElementById('lifeSound');
 const celebrateSound = document.getElementById('celebrateSound');
 
-/* ======= CONFIGURAÇÕES DO JOGO ======= */
-let numBlocks = 24; // quantidade de blocos na grade
-let blockSize = 20; // tamanho de cada bloco
+/* ======= CONFIGURAÇÃO ======= */
+let numBlocks = 24, blockSize = 20;
 let canvasWidth, canvasHeight;
 let snake = [], direction = null, lastDirection = null, food = {}, score = 0, lives = 3;
 let gameInterval = null, paused = false;
-const snakeStart = [{x:5,y:5},{x:4,y:5},{x:3,y:5}]; // posição inicial da cobra
+const snakeStart = [{x:5,y:5},{x:4,y:5},{x:3,y:5}];
+let particles = [];
 
 /* ======= FUNDO ANIMADO ======= */
-let particles = [];
 function criarParticulas() {
-  particles = [];
-  for(let i=0;i<100;i++){
-    particles.push({
-      x:Math.random()*canvasWidth,
-      y:Math.random()*canvasHeight,
-      r:Math.random()*2+1,
-      speed:Math.random()*0.5+0.2
-    });
-  }
+  particles = Array.from({length:100},()=>({
+    x:Math.random()*canvasWidth,
+    y:Math.random()*canvasHeight,
+    r:Math.random()*2+1,
+    speed:Math.random()*0.5+0.2
+  }));
 }
 
 function desenharFundo() {
@@ -262,14 +257,14 @@ function desenharFundo() {
     ctx.fillStyle='rgba(0,170,255,0.2)';
     ctx.fill();
     p.y += p.speed;
-    if(p.y>canvasHeight)p.y=0;
+    if(p.y>canvasHeight) p.y=0;
   });
 }
 
-/* ======= AJUSTE RESPONSIVO DO CANVAS ======= */
+/* ======= RESPONSIVO ======= */
 function ajustarCanvas() {
   const containerWidth = gameCanvas.parentElement.clientWidth;
-  blockSize = Math.floor(containerWidth / numBlocks); // ajusta tamanho dos blocos
+  blockSize = Math.floor(containerWidth / numBlocks);
   canvasWidth = canvasHeight = blockSize*numBlocks;
   gameCanvas.width = canvasWidth;
   gameCanvas.height = canvasHeight;
@@ -278,31 +273,36 @@ function ajustarCanvas() {
 window.addEventListener('resize', ajustarCanvas);
 ajustarCanvas();
 
-/* ======= ATUALIZAÇÃO DO PAINEL ======= */
+/* ======= PAINEL ======= */
 function atualizarInfo(){
   scoreDisplay.textContent = `Pontos: ${score}`;
   livesDisplay.textContent = `Vidas: ${lives}`;
 }
 
 /* ======= EVENTOS ======= */
-continueBtn.addEventListener('click',()=>{ coverScreen.style.display='none'; startScreen.style.display='flex'; });
+continueBtn.addEventListener('click',()=>{ 
+  coverScreen.style.display='none'; 
+  startScreen.style.display='flex'; 
+});
 startBtn.addEventListener('click', iniciarJogo);
 pauseBtn.addEventListener('click', ()=>{
   if(paused){
     gameInterval=setInterval(loopJogo,100);
     pauseBtn.textContent='Pausar';
     backgroundSound.play();
-    paused=false;
   } else {
     clearInterval(gameInterval);
     pauseBtn.textContent='Continuar';
     backgroundSound.pause();
-    paused=true;
   }
+  paused=!paused;
 });
-restartBtn.addEventListener('click', ()=>{ gameOverScreen.style.display='none'; startScreen.style.display='flex'; });
+restartBtn.addEventListener('click', ()=>{ 
+  gameOverScreen.style.display='none'; 
+  startScreen.style.display='flex'; 
+});
 
-/* ======= FUNÇÕES PRINCIPAIS ======= */
+/* ======= JOGO ======= */
 function iniciarJogo(){
   startScreen.style.display='none';
   gameCanvas.style.display='block';
@@ -320,28 +320,24 @@ function iniciarJogo(){
   gameInterval=setInterval(loopJogo,100);
 
   backgroundSound.volume=0.3;
-  backgroundSound.play().catch(e=>{});
+  backgroundSound.play().catch(()=>{});
   pauseBtn.textContent='Pausar';
 }
 
 function gerarComida(){
-  food.x=Math.floor(Math.random()*numBlocks);
-  food.y=Math.floor(Math.random()*numBlocks);
-  while(snake.some(seg=>seg.x===food.x && seg.y===food.y)){
+  do {
     food.x=Math.floor(Math.random()*numBlocks);
     food.y=Math.floor(Math.random()*numBlocks);
-  }
+  } while(snake.some(seg=>seg.x===food.x && seg.y===food.y));
 }
 
 function desenhar(){
   desenharFundo();
-  // comida
   ctx.fillStyle='#3399ff';
   ctx.beginPath();
   ctx.arc(food.x*blockSize+blockSize/2,food.y*blockSize+blockSize/2,blockSize/2-2,0,Math.PI*2);
   ctx.fill();
 
-  // cobra
   snake.forEach((seg,i)=>{
     ctx.fillStyle=i===0?'#00ccff':'#006699';
     ctx.fillRect(seg.x*blockSize,seg.y*blockSize,blockSize,blockSize);
@@ -352,8 +348,7 @@ function desenhar(){
 
 function verificarColisoes(head){
   if(head.x<0||head.x>=numBlocks||head.y<0||head.y>=numBlocks) return true;
-  for(let i=1;i<snake.length;i++){ if(head.x===snake[i].x&&head.y===snake[i].y) return true; }
-  return false;
+  return snake.slice(1).some(seg=>seg.x===head.x && seg.y===head.y);
 }
 
 function loopJogo(){
@@ -362,10 +357,10 @@ function loopJogo(){
   let newHead={x:head.x,y:head.y};
 
   switch(direction){
-    case 'left': newHead.x-=1; break;
-    case 'right': newHead.x+=1; break;
-    case 'up': newHead.y-=1; break;
-    case 'down': newHead.y+=1; break;
+    case 'left': newHead.x--; break;
+    case 'right': newHead.x++; break;
+    case 'up': newHead.y--; break;
+    case 'down': newHead.y++; break;
   }
 
   if(verificarColisoes(newHead)){
@@ -378,6 +373,7 @@ function loopJogo(){
   }
 
   snake.unshift(newHead);
+
   if(newHead.x===food.x && newHead.y===food.y){
     score+=10;
     eatSound.currentTime=0; eatSound.play();
