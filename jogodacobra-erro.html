@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐍 Jogo da Cobrinha — Responsivo</title>
+<style>
+body{
+  margin:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  background:linear-gradient(180deg,#1a1a2e,#162447);
+  font-family:sans-serif;
+  color:#fff;
+}
+.container{
+  background:rgba(255,255,255,0.05);
+  padding:16px;
+  border-radius:14px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+  width:95%;
+  max-width:450px;
+  text-align:center;
+  position:relative;
+}
+canvas{
+  width:100%;
+  max-width:400px;
+  aspect-ratio:1/1; /* Mantém o canvas quadrado */
+  background:#0d1b2a;
+  border:2px solid #00c6ff;
+  border-radius:6px;
+  display:block;
+  margin:10px auto;
+}
+button{
+  padding:10px 16px;
+  margin:4px 4px 0 4px;
+  border:none;
+  border-radius:6px;
+  background:#00c6ff;
+  color:#002;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+button:hover{background:#00a9e0;transform:scale(1.05);}
+.hud{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  margin-top:6px;
+  flex-wrap:wrap;
+}
+.rules{
+  background:rgba(0,0,0,0.3);
+  padding:10px;
+  margin-top:12px;
+  border-radius:8px;
+  font-size:0.9rem;
+  text-align:left;
+}
+.rules h3{margin:0 0 6px;font-size:1rem;color:#00c6ff;}
+.rules ul{padding-left:20px;margin:0;}
+#countdown{
+  position:absolute;
+  top:40%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-size:2rem;
+  color:#00c6ff;
+  font-weight:bold;
+  display:none;
+}
+
+/* RESPONSIVIDADE */
+@media(max-width:500px){
+  .hud{flex-direction:column;gap:6px;}
+  .rules{font-size:0.8rem;}
+  button{padding:8px 12px;font-size:0.9rem;}
+  #countdown{font-size:1.5rem;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🐍 Jogo da Cobrinha</h2>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  
+  <div class="hud">
+    <span>⭐ Pontos: <span id="score">0</span></span>
+    <span>❤️ Vidas: <span id="lives">3</span></span>
+  </div>
+  
+  <button id="startBtn">▶ Iniciar</button>
+  <button id="pauseBtn">⏸ Pausar</button>
+  <button id="backBtn">⬅ Voltar</button>
+  
+  <div id="countdown"></div>
+  
+  <div class="rules">
+    <h3>📜 Como Jogar</h3>
+    <ul>
+      <li>Use as setas ⬆ ⬇ ⬅ ➡ para mover a cobra</li>
+      <li>Coma o quadrado vermelho para ganhar pontos</li>
+      <li>Evite bater nas paredes ou no próprio corpo</li>
+      <li>Você tem 3 vidas para tentar a maior pontuação!</li>
+    </ul>
+    <p>Dica: jogue devagar no início, depois vá acelerando os movimentos 😉</p>
+  </div>
+</div>
+
+<script>
+const c=document.getElementById("canvas"),ctx=c.getContext("2d");
+let grid=15;
+let cols=c.width/grid, rows=c.height/grid;
+let snake=[], dir="right", food, score=0, lives=3, loop;
+let isPaused=false;
+
+function resizeCanvas(){
+  // Mantém o canvas quadrado e recalcula grid
+  const size = Math.min(window.innerWidth*0.9, 400);
+  c.width = size;
+  c.height = size;
+  grid = Math.floor(size / 20);
+  cols = Math.floor(c.width/grid);
+  rows = Math.floor(c.height/grid);
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function resetSnake(){
+  snake=[{x:5,y:5},{x:4,y:5},{x:3,y:5}];
+  dir="right";
+}
+function placeFood(){
+  food={x:Math.floor(Math.random()*cols),y:Math.floor(Math.random()*rows)};
+}
+function draw(){
+  ctx.fillStyle="#0d1b2a";
+  ctx.fillRect(0,0,c.width,c.height);
+  
+  snake.forEach((s,i)=>{
+    if(i===0){
+      ctx.fillStyle = "limegreen";
+      ctx.fillRect(s.x*grid,s.y*grid,grid-2,grid-2);
+      ctx.fillStyle="#000";
+      ctx.font=(grid-4)+"px sans-serif";
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillText("😀", s.x*grid+grid/2, s.y*grid+grid/2);
+    } else {
+      ctx.fillStyle = "green";
+      ctx.fillRect(s.x*grid,s.y*grid,grid-2,grid-2);
+    }
+  });
+  
+  ctx.fillStyle="red";
+  ctx.fillRect(food.x*grid,food.y*grid,grid-2,grid-2);
+}
+
+function tick(){
+  if(isPaused) return;
+  const head={...snake[0]};
+  if(dir==="left")head.x--;
+  if(dir==="right")head.x++;
+  if(dir==="up")head.y--;
+  if(dir==="down")head.y++;
+  
+  if(head.x<0||head.x>=cols||head.y<0||head.y>=rows||snake.slice(1).some(s=>s.x===head.x&&s.y===head.y)){
+    lives--;
+    if(lives<=0){
+      clearInterval(loop);
+      alert("💀 Game Over! Pontos: "+score);
+      return;
+    }
+    resetSnake();
+    placeFood();
+    return;
+  }
+  
+  snake.unshift(head);
+  if(head.x===food.x&&head.y===food.y){
+    score+=10;
+    placeFood();
+  } else {
+    snake.pop();
+  }
+  document.getElementById("score").textContent=score;
+  document.getElementById("lives").textContent=lives;
+  draw();
+}
+
+function startGame(){
+  resetSnake();
+  placeFood();
+  score=0;lives=3;
+  isPaused=false;
+  document.getElementById("score").textContent=score;
+  document.getElementById("lives").textContent=lives;
+  
+  let count=3;
+  const countdownEl=document.getElementById("countdown");
+  countdownEl.style.display="block";
+  countdownEl.textContent=count;
+  
+  const countdownInterval=setInterval(()=>{
+    count--;
+    if(count>0){
+      countdownEl.textContent=count;
+    } else {
+      countdownEl.textContent="GO!";
+      setTimeout(()=>countdownEl.style.display="none",500);
+      clearInterval(countdownInterval);
+      loop=setInterval(tick,120);
+    }
+  },1000);
+}
+
+document.getElementById("pauseBtn").onclick=()=>{
+  isPaused=!isPaused;
+  document.getElementById("pauseBtn").textContent = isPaused ? "▶ Continuar" : "⏸ Pausar";
+}
+
+document.getElementById("backBtn").onclick=()=>{
+  window.location.href="index.html";
+}
+
+document.getElementById("startBtn").onclick=startGame;
+
+window.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft"&&dir!=="right")dir="left";
+  if(e.key==="ArrowRight"&&dir!=="left")dir="right";
+  if(e.key==="ArrowUp"&&dir!=="down")dir="up";
+  if(e.key==="ArrowDown"&&dir!=="up")dir="down";
+});
+
+draw();
+</script>
+</body>
+</html>
