@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐍 Jogo da Cobrinha — Responsivo</title>
+<title>🐍 Jogo da Cobrinha </title>
 <style>
 body{
   margin:0;
@@ -28,7 +28,7 @@ body{
 canvas{
   width:100%;
   max-width:400px;
-  aspect-ratio:1/1; /* Mantém o canvas quadrado */
+  aspect-ratio:1/1;
   background:#0d1b2a;
   border:2px solid #00c6ff;
   border-radius:6px;
@@ -74,8 +74,6 @@ button:hover{background:#00a9e0;transform:scale(1.05);}
   font-weight:bold;
   display:none;
 }
-
-/* RESPONSIVIDADE */
 @media(max-width:500px){
   .hud{flex-direction:column;gap:6px;}
   .rules{font-size:0.8rem;}
@@ -120,7 +118,6 @@ let snake=[], dir="right", food, score=0, lives=3, loop;
 let isPaused=false;
 
 function resizeCanvas(){
-  // Mantém o canvas quadrado e recalcula grid
   const size = Math.min(window.innerWidth*0.9, 400);
   c.width = size;
   c.height = size;
@@ -174,6 +171,7 @@ function tick(){
     if(lives<=0){
       clearInterval(loop);
       alert("💀 Game Over! Pontos: "+score);
+      startGame(); // <-- Reinicia o jogo automaticamente
       return;
     }
     resetSnake();
@@ -214,6 +212,7 @@ function startGame(){
       countdownEl.textContent="GO!";
       setTimeout(()=>countdownEl.style.display="none",500);
       clearInterval(countdownInterval);
+      clearInterval(loop);
       loop=setInterval(tick,120);
     }
   },1000);
@@ -235,6 +234,11 @@ window.addEventListener("keydown",e=>{
   if(e.key==="ArrowRight"&&dir!=="left")dir="right";
   if(e.key==="ArrowUp"&&dir!=="down")dir="up";
   if(e.key==="ArrowDown"&&dir!=="up")dir="down";
+  if(e.code==="Space"){ // <-- AGORA A BARRA DE ESPAÇO PAUSA/CONTINUA
+    e.preventDefault();
+    isPaused=!isPaused;
+    document.getElementById("pauseBtn").textContent = isPaused ? "▶ Continuar" : "⏸ Pausar";
+  }
 });
 
 draw();
