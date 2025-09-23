@@ -12,17 +12,17 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start; /* Agora começa do topo */
+      justify-content: flex-start;
       min-height: 100vh;
       color: white;
-      overflow-y: auto; /* Permite rolar para ver tudo */
+      overflow-y: auto;
       overflow-x: hidden;
       position: relative;
       background: #0b0f2a;
     }
 
     canvas {
-      position: fixed; /* Fundo fixo mesmo ao rolar */
+      position: fixed;
       inset: 0;
       z-index: 0;
     }
@@ -75,6 +75,7 @@
       box-shadow: 0 12px 25px rgba(0,0,0,0.4);
       transition: transform 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
       cursor: pointer;
+      position: relative;
     }
 
     .game-card:hover {
@@ -104,6 +105,56 @@
       line-height: 1.4;
     }
 
+    /* ======== TOOLTIP AO LADO ======== */
+    .tooltip {
+      position: absolute;
+      top: 50%;
+      left: 105%;
+      transform: translateY(-50%);
+      background: rgba(0, 200, 255, 0.95);
+      color: #000;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      max-width: 300px;
+      white-space: normal;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+
+    .tooltip::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: -8px;
+      transform: translateY(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: transparent rgba(0, 200, 255, 0.95) transparent transparent;
+    }
+
+    .game-card:hover .tooltip {
+      opacity: 1;
+    }
+
+    /* ======== RESPONSIVIDADE PARA CELULAR ======== */
+    @media(max-width: 700px) {
+      .tooltip {
+        top: 105%; /* vai para baixo do card */
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .tooltip::after {
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-color: transparent transparent rgba(0, 200, 255, 0.95) transparent;
+      }
+    }
+
     @media(max-width:600px){
       .game-menu { gap: 15px; }
       .game-card { padding: 15px 10px; }
@@ -116,7 +167,6 @@
   <h1>🎮 Escolha Seu Jogo</h1>
   <div class="subtitle">Prepare-se para a ação! Escolha seu desafio e divirta-se.</div>
 
-  <!-- GRID COM OS CARDS DOS JOGOS -->
   <div class="game-menu">
     <div class="game-card" onclick="window.location.href='velha.html'">
       <img src="velha.png" alt="Jogo da Velha">
@@ -136,10 +186,21 @@
       <div class="game-desc">Controle a cobrinha e cresça sem bater nas paredes!</div>
     </div>
 
-    <!-- Card extra para teste -->
+    <!-- Card com Tooltip lateral -->
     <div class="game-card" onclick="window.location.href='jogodacobra-erro.html'">
+      <span class="tooltip">
+        <strong>Espaço está iniciando o jogo (errado)</strong><br><br>
+        No seu código não há nenhuma função associada à tecla de espaço, mas o comportamento padrão do navegador quando você pressiona Barra de Espaço é rolar a página para baixo.<br><br>
+        Quando o jogo está com <code>loop=setInterval(tick,120)</code>, a rolagem pode causar um refresh visual que parece reiniciar o jogo — mas na verdade não há lógica para pausar nem iniciar via espaço.<br><br>
+        <strong>Solução:</strong> precisamos interceptar o evento de tecla espaço e usar para pausar/continuar o jogo, em vez de deixar o navegador tratar.<br><br>
+        <strong>Erro ao perder o jogo (não reinicia)</strong><br><br>
+        No <code>tick()</code>, quando <code>lives &lt;= 0</code>, você faz:<br>
+        <code>clearInterval(loop);<br>alert("💀 Game Over! Pontos: "+score);<br>return;</code><br><br>
+        Isso para o loop, mas você não reseta a cobra, comida ou placar, e também não reinicia o jogo automaticamente. Então o jogo fica "congelado".<br><br>
+        <strong>Solução:</strong> depois do <code>alert</code>, podemos chamar <code>startGame()</code> para reiniciar, ou permitir que o jogador clique no botão "Iniciar" para recomeçar.
+      </span>
       <img src="cobra.png" alt="Jogo da Cobrinha (Erro)">
-      <div class="game-title">Jogo da Cobrinha ⚠️Com erro</div>
+      <div class="game-title">Jogo da Cobrinha ⚠️</div>
       <div class="game-desc">Versão de teste para verificar e corrigir bugs.</div>
     </div>
   </div>
