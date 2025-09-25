@@ -118,58 +118,6 @@
       line-height: 1.4;
     }
 
-    /* ======== TOOLTIP AO LADO ======== */
-    .tooltip {
-      position: absolute;
-      top: 50%;
-      left: 105%;
-      transform: translateY(-50%);
-      background: rgba(0, 200, 255, 0.95);
-      color: #000;
-      padding: 14px 18px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      max-width: 350px;
-      white-space: normal;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      z-index: 10;
-      line-height: 1.4;
-    }
-
-    .tooltip::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: -8px;
-      transform: translateY(-50%);
-      border-width: 6px;
-      border-style: solid;
-      border-color: transparent rgba(0, 200, 255, 0.95) transparent transparent;
-    }
-
-    .game-card:hover .tooltip {
-      opacity: 1;
-    }
-
-    /* ======== RESPONSIVIDADE PARA CELULAR ======== */
-    @media(max-width: 700px) {
-      .tooltip {
-        top: 105%;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-
-      .tooltip::after {
-        top: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-color: transparent transparent rgba(0, 200, 255, 0.95) transparent;
-      }
-    }
-
     @media(max-width:600px) {
       .game-menu {
         gap: 15px;
@@ -211,21 +159,6 @@
       <img src="cobra.png" alt="Jogo da Cobrinha">
       <div class="game-title">Jogo da Cobrinha</div>
       <div class="game-desc">Controle a cobrinha e cresça sem bater nas paredes!</div>
-    </div>
-
-    <!-- Card com Tooltip detalhado -->
-    <div class="game-card" onclick="window.location.href='jogodacobra-erro.html'">
-      <span class="tooltip">
-        <strong>Jogo da Cobrinha – Problemas detectados:</strong><br><br>
-        1. <strong>Tecla Espaço:</strong> Atualmente, ao pressionar a barra de espaço, reiniciava o jogo e voltava mais rapido. Como o jogo roda com um loop contínuo (<code>setInterval(tick, 120)</code>), essa rolagem cria um efeito visual que parece reiniciar o jogo, mas não há realmente uma função de pausar ou iniciar via espaço. <br>
-        <em>Solução:</em> interceptar o evento da tecla espaço usando <code>keydown</code> e usar essa tecla para pausar ou continuar o jogo, evitando que o navegador execute sua função padrão.<br><br>
-
-        2. <strong>Fim de jogo:</strong> Quando a variável <code>lives</code> chega a 0, o código atual faz apenas <code>clearInterval(loop)</code> e exibe o alerta "Game Over!". Porém, a cobrinha, a comida e o placar não são reiniciados, deixando o jogo "congelado".<br>
-        <em>Solução:</em> após o alerta, chamar a função <code>startGame()</code> para reiniciar automaticamente o jogo ou permitir que o jogador clique em um botão de "Iniciar" para recomeçar.
-      </span>
-      <img src="cobra.png" alt="Jogo da Cobrinha (Erro)">
-      <div class="game-title">Jogo da Cobrinha ⚠️</div>
-      <div class="game-desc">Versão de teste para verificar e corrigir bugs.</div>
     </div>
   </div>
 
